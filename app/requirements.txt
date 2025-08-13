@@ -1,0 +1,9 @@
+fastapi 
+uvicorn[standard]
+python-dotenv
+confluent-kafka==2.8.0
+pydantic
+httpx
+pydantic-settings
+airbyte-api==0.50.0
+redis
