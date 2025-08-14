@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from confluent_kafka.admin import AdminClient, NewTopic, ConfigResource, ResourceType
 from typing import Optional
 from functools import wraps
-from model.topic import CreateTopicRequest,UpdateTopicRequest,DeleteTopicRequest,TopicInfoRequest
+from model.topic import CreateTopicRequest,UpdateTopicRequest
 from pydantic import ValidationError
 from fastapi import HTTPException
 from confluent_kafka import KafkaException, KafkaError
@@ -29,12 +29,9 @@ def handle_kafka_errors(func):
     return wrapper
 
 
-
-
-# KafkaTopicService class
 class KafkaTopicService:
     def __init__(self, kafka_broker: str):
-        self.kafka_broker = kafka_broker  # Store the Kafka broker as an instance variable
+        self.kafka_broker = kafka_broker  
 
     def get_admin_client(self):
         """Create and return an AdminClient instance using the stored Kafka broker."""
@@ -48,7 +45,6 @@ class KafkaTopicService:
         if not topic_name:
             raise ValueError("Topic name cannot be empty.")
         
-        # Check if topic already exists
         topic_metadata = admin_client.list_topics(timeout=10)
         if topic_name in topic_metadata.topics:
             raise HTTPException(status_code=409, detail=f"Topic '{topic_name}' already exists.")

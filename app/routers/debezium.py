@@ -4,7 +4,6 @@ from model.debezium import DebeziumConnectorPayload
 
 router = APIRouter(prefix="/debezium", tags=["Debezium"])
 
-# Initialize the DebeziumService
 debezium_service = DebeziumService()
 
 @router.post(

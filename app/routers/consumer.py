@@ -1,17 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from core.config import Settings
+from core.config import settings
 from services.consumer import KafkaConsumerService
 from functools import lru_cache
-from model.consumer import ConsumerCreationRequest  # Import the model
+from model.consumer import ConsumerCreationRequest  
 
 router = APIRouter(prefix="/consumer", tags=["consumer"])
 
-def get_settings() -> Settings:
-    return Settings()
 
 @lru_cache()
 def get_kafka_service_singleton() -> KafkaConsumerService:
-    settings = get_settings() # Initialize the JobService here
     return KafkaConsumerService(settings.KAFKA_BROKER)
 
 def get_kafka_service(
@@ -19,7 +16,6 @@ def get_kafka_service(
 ) -> KafkaConsumerService:
     return kafka_service
 
-# Adjust the route to use the ConsumerCreationRequest model
 @router.post(
     "/start",
     response_model=dict,
@@ -32,13 +28,13 @@ def get_kafka_service(
     }
 )
 def start_consumer(
-    consumer_request: ConsumerCreationRequest,  # Use the model here
+    consumer_request: ConsumerCreationRequest, 
     kafka_service: KafkaConsumerService = Depends(get_kafka_service)
 ):
     """Starts a Kafka consumer with the provided configuration."""
     try:
         response = kafka_service.start_consumer(
-            consumer_request  # Pass the auto_offset_reset
+            consumer_request  
         )
         return response
     except ValueError as e:

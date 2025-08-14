@@ -1,15 +1,10 @@
 from pydantic import ValidationError
 import httpx
 from typing import Optional
-from time import sleep
 from model.debezium import DebeziumConnectorPayload
 from functools import wraps
-from core.config import Settings
+from core.config import settings    
 
-# Load settings
-settings = Settings()
-
-# Decorator for error handling
 def handle_debezium_errors(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -27,7 +22,7 @@ def handle_debezium_errors(func):
 
 class DebeziumService:
     def __init__(self):
-        self.connector_url = settings.DEBEZIUM_CONNECTOR_URL  # Get URL from settings
+        self.connector_url = settings.DEBEZIUM_CONNECTOR_URL  
 
     @handle_debezium_errors
     def start_producer_debezium(self, connector_payload: Optional[DebeziumConnectorPayload] = None):
@@ -41,15 +36,13 @@ class DebeziumService:
         Returns:
             dict: A message indicating success or error details.
         """
-        # Validate the payload using Pydantic
-        connector_payload = DebeziumConnectorPayload(**connector_payload.dict())  # Ensures proper validation
+        connector_payload = DebeziumConnectorPayload(**connector_payload.dict())  
         payload_dict = connector_payload.dict()
         json_payload = {
             "name": payload_dict["name"],
             "config": {str(key).replace("_", "."): value for key, value in payload_dict["config"].items()}
         }
 
-        # Create the Debezium connector
         create_response = httpx.post(
             self.connector_url,
             headers={"Content-Type": "application/json", "Accept": "application/json"},
@@ -57,7 +50,6 @@ class DebeziumService:
             timeout=5.0
         )
 
-        # Extract the response body, if successful
         response_json = create_response.json()
         return {"result": response_json}
 

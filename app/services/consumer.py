@@ -8,10 +8,8 @@ from model.consumer import ConsumerCreationRequest
 from fastapi import HTTPException
 import redis
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Exception Handling Decorator (unchanged)
 def handle_exceptions(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -30,7 +28,6 @@ class KafkaConsumerService:
             host='redis', port=6379, db=0, decode_responses=True
         )
 
-    # Helper methods
     def _generate_redis_key(self, pipeline_name: str) -> str:
         return f"{pipeline_name}"
 
@@ -48,7 +45,6 @@ class KafkaConsumerService:
         date_time = datetime.fromtimestamp(timestamp_seconds, tz=timezone.utc)
         return date_time, date_time.strftime('%Y-%m-%d %H:%M:%S')
 
-    # Consumer management
     @handle_exceptions
     def start_consumer(self, request: ConsumerCreationRequest):
         with self.consumers_lock:
@@ -91,7 +87,6 @@ class KafkaConsumerService:
             consumer_data['consumer'].close()
             return {"message": f"Stopped consumer '{consumer_id}'."}
 
-    # Message processing
     def _message_consumption_loop(self, consumer_id: str, topic: str, pipeline_name: str, max_event: int, max_time: int):
         consumer = self.consumers[consumer_id]['consumer']
         consumer.subscribe([topic])
@@ -142,8 +137,6 @@ class KafkaConsumerService:
             max_event,
             max_time
         )
-
-    # Redis operations
     def _update_redis_state(self, pipeline_name: str, event_type: str, formatted_date: str, 
                           table: str, schema: str, db: str, max_event: int, max_time: int):
         redis_key = self._generate_redis_key(pipeline_name)
@@ -183,7 +176,6 @@ class KafkaConsumerService:
         }
         self.redis_client.hset(redis_key, 'event', json.dumps(updated_event))
 
-    # Sync handling
     def _check_sync_requirements(self, redis_key: str, event_type: str, 
                                formatted_date: str, max_event: int, max_time: int):
         event_data = self._get_event_data(redis_key)
@@ -234,7 +226,6 @@ class KafkaConsumerService:
         self.redis_client.hset(redis_key, 'event', json.dumps(event_data))
         print(f"Reset event count for {redis_key}")
 
-    # Info methods (unchanged except for formatting)
     @handle_exceptions
     def get_consumer_info(self, consumer_id: str):
         with self.consumers_lock:

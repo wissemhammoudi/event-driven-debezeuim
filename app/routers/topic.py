@@ -1,18 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from services.topic import KafkaTopicService
-from core.config import Settings
+from core.config import settings
 from model.topic import CreateTopicRequest, UpdateTopicRequest, TopicInfoRequest, DeleteTopicRequest
 from functools import lru_cache
 
 router = APIRouter(prefix="/topic", tags=["topics"])
 
-# Initialize router and settings
-def get_settings() -> Settings:
-    return Settings()
+
 
 @lru_cache()
 def get_kafka_service_singleton() -> KafkaTopicService:
-    settings = get_settings()
     return KafkaTopicService(settings.KAFKA_BROKER)
 
 def get_kafka_service(
